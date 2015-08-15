@@ -7,6 +7,8 @@ Only words that have kanji in them go into database, but it's fairly simple to m
 ### Requirements
 
 It takes about 1.4 G of memory to process files.
+Debian, Ubuntu: apt-get install libxml-libxml-perl
+Arch: pacman -S perl-xml-libxml
 
 ### Database structure
 
