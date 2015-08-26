@@ -26,6 +26,7 @@ Arch: pacman -S perl-xml-libxml
     |   | kanji_id      |---'                   | hiragana_reading |
     '---| radical_id    |                       | meaning          |
         '---------------'                       | length           |
+                                                | character_count  |
                                                 '------------------'
 
 ### Get files

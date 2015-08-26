@@ -16,11 +16,13 @@ CREATE TABLE radicals (
  radical varchar(1),
  type varchar(1),
  meaning varchar(255));
-CREATE TABLE words (id integer,
+CREATE TABLE words (
+ id integer,
  kanji_reading varchar(255),
  hiragana_reading varchar(255),
  meaning varchar(255),
- length integer
+ length integer,
+ character_count integer
 );
 CREATE TABLE kanjiwords (
  kanji_id integer,

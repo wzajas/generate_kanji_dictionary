@@ -88,17 +88,19 @@ foreach my $entry ( $doc->findnodes('/JMdict/entry') ) {
  my %characterwords;
  my @meaning = ();
  my @current_words = ();
- my @current_characters = ();
  my @hiragana = ();
 
  foreach my $word ( $entry->findnodes('./k_ele/keb') ) {
   push(@current_words, $word_idx);
+  my %current_characters = ();
   $words{$word_idx} = { 'Word' => $word->to_literal, 'Length' => length($word->to_literal), };
   for (split(//, $word->to_literal)) {
    if(defined $characters{$_}) {
+    $current_characters{$_}=1;
     $characters{$_}{Words}{$word_idx}=1;
    }
   }
+  $words{$word_idx}{Character_Count} = scalar keys %current_characters;
   $word_idx++;
  }
 
@@ -144,7 +146,8 @@ for my $idx (keys %words ) {
    (map { qq /"$_"/ } $words{$idx}{Word},
    join('; ',@{$words{$idx}{Hiragana}}),
    join('; ',@{$words{$idx}{Glossary}})),
-   $words{$idx}{Length};
+   $words{$idx}{Length},
+   $words{$idx}{Character_Count};
   print WORDS "\n";
 }
 
