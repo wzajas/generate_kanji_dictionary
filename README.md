@@ -27,6 +27,7 @@ Arch: pacman -S perl-xml-libxml
     '---| radical_id    |                       | meaning          |
         '---------------'                       | length           |
                                                 | character_count  |
+                                                | frequency_value  |
                                                 '------------------'
 
 ### Get files

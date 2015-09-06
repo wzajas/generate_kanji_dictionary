@@ -22,7 +22,8 @@ CREATE TABLE words (
  hiragana_reading varchar(255),
  meaning varchar(255),
  length integer,
- character_count integer
+ character_count integer,
+ frequency_value integer
 );
 CREATE TABLE kanjiwords (
  kanji_id integer,

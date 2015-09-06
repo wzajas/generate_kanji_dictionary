@@ -84,25 +84,49 @@ $doc = $parser->parse_file('JMdict');
 my $word_idx=1;
 my %words;
 
-foreach my $entry ( $doc->findnodes('/JMdict/entry') ) {
- my %characterwords;
+#Add frequency value if word has one of those in ke_pri
+my %freqlist = ( 'news1' => 50, 'news2' => '25', 'ichi1' => 50, 'ichi2' => '25' );
+
+my $maxnf = 50;
+foreach ( 1 .. $maxnf ) {
+ $freqlist{sprintf("nf%02d",$_)} = $maxnf - $_;
+}
+
+ENTRIES: foreach my $entry ( $doc->findnodes('/JMdict/entry[./k_ele/keb]') ) {
  my @meaning = ();
  my @current_words = ();
  my @hiragana = ();
 
- foreach my $word ( $entry->findnodes('./k_ele/keb') ) {
-  push(@current_words, $word_idx);
-  my %current_characters = ();
-  $words{$word_idx} = { 'Word' => $word->to_literal, 'Length' => length($word->to_literal), };
-  for (split(//, $word->to_literal)) {
-   if(defined $characters{$_}) {
-    $current_characters{$_}=1;
-    $characters{$_}{Words}{$word_idx}=1;
+ foreach my $kele ( $entry->findnodes('./k_ele') ) {
+  WORDS: foreach my $word ( $kele->findnodes('./keb') ) {
+   my %current_characters = ();
+   for (split(//, $word->to_literal)) {
+    if(defined $characters{$_}) {
+     $current_characters{$_}=1;
+     $characters{$_}{Words}{$word_idx}=1;
+    }
    }
+
+   next WORDS if scalar keys %current_characters < 1;
+
+   push(@current_words, $word_idx);
+   $words{$word_idx} = { 'Word' => $word->to_literal,
+    'Length' => length($word->to_literal),
+    'Frequency_Value' => 0
+   };
+   $words{$word_idx}{Character_Count} = scalar keys %current_characters;
+
+   foreach my $keinf ( $kele->findnodes('./ke_pri') ) {
+    if(defined($freqlist{$keinf->to_literal})) {
+     $words{$word_idx}{Frequency_Value}+=$freqlist{$keinf->to_literal};
+    }
+   }
+
+   $word_idx++;
   }
-  $words{$word_idx}{Character_Count} = scalar keys %current_characters;
-  $word_idx++;
  }
+
+ next ENTRIES if scalar keys @current_words < 1;
 
  foreach my $reading ( $entry->findnodes('./r_ele/reb') ) {
   push(@hiragana, $reading->to_literal);
@@ -147,7 +171,8 @@ for my $idx (keys %words ) {
    join('; ',@{$words{$idx}{Hiragana}}),
    join('; ',@{$words{$idx}{Glossary}})),
    $words{$idx}{Length},
-   $words{$idx}{Character_Count};
+   $words{$idx}{Character_Count},
+   $words{$idx}{Frequency_Value};
   print WORDS "\n";
 }
 
