@@ -23,7 +23,9 @@ CREATE TABLE words (
  meaning varchar(255),
  length integer,
  character_count integer,
- frequency_value integer
+ common integer,
+ irregular integer,
+ ent_seq integer
 );
 CREATE TABLE kanjiwords (
  kanji_id integer,

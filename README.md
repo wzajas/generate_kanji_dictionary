@@ -7,7 +7,9 @@ Only words that have kanji in them go into database, but it's fairly simple to m
 ### Requirements
 
 It takes about 1.4 G of memory to process files.
+
 Debian, Ubuntu: apt-get install libxml-libxml-perl
+
 Arch: pacman -S perl-xml-libxml
 
 ### Database structure
@@ -27,7 +29,9 @@ Arch: pacman -S perl-xml-libxml
     '---| radical_id    |                       | meaning          |
         '---------------'                       | length           |
                                                 | character_count  |
-                                                | frequency_value  |
+                                                | common           |
+                                                | irregular        |
+                                                | ent_seq          |
                                                 '------------------'
 
 ### Get files
@@ -61,4 +65,10 @@ perl generate_dict.pl
 ```
 sqlite3 dictionary.db < database_structure.sql
 sqlite3 dictionary.db < import.sql 
+```
+
+### Clean
+
+```
+rm {KANJI,KANJIRADICALS,KANJIWORDS,RADICALS,WORDS}_IMPORT
 ```

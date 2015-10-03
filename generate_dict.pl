@@ -84,46 +84,58 @@ $doc = $parser->parse_file('JMdict');
 my $word_idx=1;
 my %words;
 
-#Add frequency value if word has one of those in ke_pri
-my %freqlist = ( 'news1' => 50, 'news2' => '25', 'ichi1' => 50, 'ichi2' => '25' );
+#Add as 'common' if word has one of those in ke_pri
+my %commonlist = ( 'news1' => 1, 'news2' => 1, 'ichi1' => 1, 'ichi2' => 1 );
 
 my $maxnf = 50;
 foreach ( 1 .. $maxnf ) {
- $freqlist{sprintf("nf%02d",$_)} = $maxnf - $_;
+ $commonlist{sprintf("nf%02d",$_)} = 1;
 }
+
+my %irregular_ke_inf = ( 'word containing irregular kanji usage' => 1, 'irregular okurigana usage' => 1, 'ateji (phonetic) reading' => 1 );
 
 ENTRIES: foreach my $entry ( $doc->findnodes('/JMdict/entry[./k_ele/keb]') ) {
  my @meaning = ();
  my @current_words = ();
  my @hiragana = ();
 
- foreach my $kele ( $entry->findnodes('./k_ele') ) {
-  WORDS: foreach my $word ( $kele->findnodes('./keb') ) {
-   my %current_characters = ();
-   for (split(//, $word->to_literal)) {
-    if(defined $characters{$_}) {
-     $current_characters{$_}=1;
-     $characters{$_}{Words}{$word_idx}=1;
-    }
+ my $ent_seq = $entry->findvalue('./ent_seq');
+
+ KELE: foreach my $kele ( $entry->findnodes('./k_ele') ) {
+  my $word = $kele->findvalue('./keb');
+  my %current_characters = ();
+  for (split(//, $word)) {
+   if(defined $characters{$_}) {
+    $current_characters{$_}=1;
+    $characters{$_}{Words}{$word_idx}=1;
    }
-
-   next WORDS if scalar keys %current_characters < 1;
-
-   push(@current_words, $word_idx);
-   $words{$word_idx} = { 'Word' => $word->to_literal,
-    'Length' => length($word->to_literal),
-    'Frequency_Value' => 0
-   };
-   $words{$word_idx}{Character_Count} = scalar keys %current_characters;
-
-   foreach my $keinf ( $kele->findnodes('./ke_pri') ) {
-    if(defined($freqlist{$keinf->to_literal})) {
-     $words{$word_idx}{Frequency_Value}+=$freqlist{$keinf->to_literal};
-    }
-   }
-
-   $word_idx++;
   }
+
+  next KELE if scalar keys %current_characters < 1;
+
+  my $irregular=0;
+  foreach my $keb_inf ( $kele->findnodes('./ke_inf') ) {
+   if( $irregular_ke_inf{$keb_inf->to_literal} ) {
+    $irregular=1;
+   }
+  }
+
+  push(@current_words, $word_idx);
+  $words{$word_idx} = { 'Word' => $word,
+   'Length' => length($word),
+   'Common' => 0,
+   'Irregular' => $irregular,
+   'Ent_Seq' => $ent_seq,
+  };
+  $words{$word_idx}{Character_Count} = scalar keys %current_characters;
+
+  foreach my $keinf ( $kele->findnodes('./ke_pri') ) {
+   if(defined($commonlist{$keinf->to_literal})) {
+    $words{$word_idx}{Common}=1;
+   }
+  }
+
+  $word_idx++;
  }
 
  next ENTRIES if scalar keys @current_words < 1;
@@ -172,7 +184,9 @@ for my $idx (keys %words ) {
    join('; ',@{$words{$idx}{Glossary}})),
    $words{$idx}{Length},
    $words{$idx}{Character_Count},
-   $words{$idx}{Frequency_Value};
+   $words{$idx}{Common},
+   $words{$idx}{Irregular},
+   $words{$idx}{Ent_Seq};
   print WORDS "\n";
 }
 
