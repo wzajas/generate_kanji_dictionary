@@ -38,3 +38,4 @@ CREATE INDEX idx1 on words(id);
 CREATE INDEX idx2 on kanjiwords(kanji_id);
 CREATE INDEX idx3 on kanjiwords(word_id);
 CREATE INDEX idx4 on kanjiwords(kanji_id,word_id);
+CREATE INDEX idx4 on words(ent_seq);
